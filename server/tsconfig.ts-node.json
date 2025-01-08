@@ -1,0 +1,8 @@
+// filepath: /Users/ginat/bootcamp/book-search-engine/server/tsconfig.ts-node.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node"
+  }
+}
