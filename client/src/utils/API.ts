@@ -33,7 +33,7 @@ export const loginUser = (userData: User) => {
 
 // save book data for a logged in user
 export const saveBook = (bookData: Book, token: string) => {
-  return fetch('/api/users', {
+  return fetch('/api/users/books', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -56,5 +56,5 @@ export const deleteBook = (bookId: string, token: string) => {
 // make a search to google books api
 // https://www.googleapis.com/books/v1/volumes?q=harry+potter
 export const searchGoogleBooks = (query: string) => {
-  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
+  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`);
 };

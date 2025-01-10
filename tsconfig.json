@@ -5,7 +5,7 @@
 
     /* Modules */
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "node", // Changed from "bundler" to "node"
     "skipLibCheck": true,
 
     /* JavaScript Support */
@@ -25,8 +25,9 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
-    "useUnknownInCatchVariables": true
-  },
-  "include": [],
-  "exclude": ["node_modules"]
+    "useUnknownInCatchVariables": true,
+
+    /* Emit */
+    "outDir": "./dist"
+  }
 }
