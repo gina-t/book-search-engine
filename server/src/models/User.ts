@@ -1,4 +1,4 @@
-import { Schema, model, type Document } from 'mongoose';
+import { Schema, model, type Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 // import schema from Book.js
@@ -6,7 +6,7 @@ import bookSchema from './Book.js';
 import type { BookDocument } from './Book.js';
 
 export interface UserDocument extends Document {
-  id: string;
+  _id: string; // Ensure _id is typed as string
   username: string;
   email: string;
   password: string;
@@ -17,6 +17,11 @@ export interface UserDocument extends Document {
 
 const userSchema = new Schema<UserDocument>(
   {
+    _id: {
+      type: String,
+      required: true,
+      default: () => new Types.ObjectId().toString(), // Ensure _id is a string
+    },
     username: {
       type: String,
       required: true,

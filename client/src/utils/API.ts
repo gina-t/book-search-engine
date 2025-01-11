@@ -1,5 +1,5 @@
-import type { User } from '../models/User.js';
-import type { Book } from '../models/Book.js';
+import type { User } from '../models/User';
+import type { Book } from '../models/Book';
 
 // route to get logged in user's info (needs the token)
 export const getMe = (token: string) => {
@@ -56,5 +56,10 @@ export const deleteBook = (bookId: string, token: string) => {
 // make a search to google books api
 // https://www.googleapis.com/books/v1/volumes?q=harry+potter
 export const searchGoogleBooks = (query: string) => {
-  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`);
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+  console.log('Google API Key:', apiKey); // Add this line to check the API key
+  if (!apiKey) {
+    throw new Error('Google API key is missing');
+  }
+  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`);
 };

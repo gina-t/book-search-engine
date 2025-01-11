@@ -1,10 +1,18 @@
-import type { BookDocument } from '../models/Book.js';
+import { AuthenticationError } from 'apollo-server-express';
 import User from '../models/User.js';
 import { signToken } from '../services/auth.js';
+import type { BookDocument } from '../models/Book.js';
+import type { IResolvers } from '@graphql-tools/utils';
+import type { Context } from '../types/context.js';
 
-const resolvers = {
+const resolvers: IResolvers = {
   Query: {
-    // Query to get all users
+    me: async (_parent, _args, context: Context) => {
+      if (context.user) {
+        return User.findOne({ _id: context.user._id }).populate('savedBooks');
+      }
+      throw new AuthenticationError('You need to be logged in!');
+    },
     users: async () => {
       try {
         return await User.find({});
@@ -12,7 +20,13 @@ const resolvers = {
         throw new Error(`Error fetching users: ${(error as Error).message}`);
       }
     },
-    // Query to get all books from all users' savedBooks
+    user: async (_parent, { id }: { id: string }) => {
+      try {
+        return await User.findById(id).populate('savedBooks');
+      } catch (error) {
+        throw new Error(`Error fetching user: ${(error as Error).message}`);
+      }
+    },
     books: async () => {
       try {
         const users = await User.find({});
@@ -21,8 +35,7 @@ const resolvers = {
         throw new Error(`Error fetching books: ${(error as Error).message}`);
       }
     },
-    // Query to get a single book by ID from all users' savedBooks
-    book: async (_parent: any, { id }: { id: string }) => {
+    book: async (_parent, { id }: { id: string }) => {
       try {
         const users = await User.find({});
         for (const user of users) {
@@ -34,101 +47,58 @@ const resolvers = {
         throw new Error(`Error fetching book: ${(error as Error).message}`);
       }
     },
-    // Query to get a single user by ID or username
-    user: async (_parent: any, { id, username }: { id?: string; username?: string }) => {
-      try {
-        const foundUser = await User.findOne({
-          $or: [{ _id: id }, { username }],
-        });
-        if (!foundUser) {
-          throw new Error('Cannot find a user with this id or username!');
-        }
-        return foundUser;
-      } catch (error) {
-        throw new Error(`Error fetching user: ${(error as Error).message}`);
-      }
-    },
   },
   Mutation: {
-    // Mutation to add a new book to a user's savedBooks
-    addBook: async (_parent: any, { userId, book }: { userId: string; book: BookDocument }) => {
-      const user = await User.findById(userId);
-      if (!user) throw new Error('User not found');
-      user.savedBooks.push(book);
-      await user.save();
-      return book;
+    login: async (_parent, { email, password }: { email: string; password: string }) => {
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        throw new AuthenticationError('No user found with this email address');
+      }
+
+      const correctPw = await user.isCorrectPassword(password);
+
+      if (!correctPw) {
+        throw new AuthenticationError('Incorrect credentials');
+      }
+
+      const token = signToken({
+        username: user.username,
+        email: user.email,
+        _id: user._id, 
+      });
+
+      return { token, user };
     },
-    // Mutation to update a book by ID in a user's savedBooks
-    updateBook: async (_parent: any, { userId, bookId, book }: { userId: string; bookId: string; book: Partial<BookDocument> }) => {
-      const user = await User.findById(userId);
-      if (!user) throw new Error('User not found');
-      const bookIndex = user.savedBooks.findIndex(b => b.bookId === bookId);
-      if (bookIndex === -1) throw new Error('Book not found');
-      user.savedBooks[bookIndex] = { ...user.savedBooks[bookIndex].toObject(), ...book };
-      await user.save();
-      return user.savedBooks[bookIndex];
+    addUser: async (_parent, { username, email, password }: { username: string; email: string; password: string }) => {
+      const user = await User.create({ username, email, password });
+      const token = signToken({
+        username: user.username,
+        email: user.email,
+        _id: user._id, 
+      });
+
+      return { token, user };
     },
-    // Mutation to delete a book by ID from a user's savedBooks
-    deleteBook: async (_parent: any, { userId, bookId }: { userId: string; bookId: string }) => {
-      try {
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: userId },
+    saveBook: async (_parent, { bookData }: { bookData: BookDocument }, context: Context) => {
+      if (context.user) {
+        return User.findByIdAndUpdate(
+          context.user._id,
+          { $addToSet: { savedBooks: bookData } },
+          { new: true }
+        ).populate('savedBooks');
+      }
+      throw new AuthenticationError('You need to be logged in!');
+    },
+    removeBook: async (_parent, { bookId }: { bookId: string }, context: Context) => {
+      if (context.user) {
+        return User.findByIdAndUpdate(
+          context.user._id,
           { $pull: { savedBooks: { bookId } } },
           { new: true }
-        );
-        if (!updatedUser) {
-          throw new Error("Couldn't find user with this id!");
-        }
-        return updatedUser;
-      } catch (error) {
-        throw new Error(`Error deleting book: ${(error as Error).message}`);
+        ).populate('savedBooks');
       }
-    },
-    // Mutation to create a user, sign a token, and return it
-    createUser: async (_parent: any, { username, email, password }: { username: string; email: string; password: string }) => {
-      try {
-        const user = await User.create({ username, email, password });
-        if (!user) {
-          throw new Error('Something is wrong!');
-        }
-        const token = signToken(user.username, user.email, user._id);
-        return { token, user };
-      } catch (error) {
-        throw new Error(`Error creating user: ${(error as Error).message}`);
-      }
-    },
-    // Mutation to login a user, sign a token, and return it
-    login: async (_parent: any, { username, email, password }: { username?: string; email?: string; password: string }) => {
-      try {
-        const user = await User.findOne({ $or: [{ username }, { email }] });
-        if (!user) {
-          throw new Error("Can't find this user");
-        }
-        const correctPw = await user.isCorrectPassword(password);
-        if (!correctPw) {
-          throw new Error('Wrong password!');
-        }
-        const token = signToken(user.username, user.email, user._id);
-        return { token, user };
-      } catch (error) {
-        throw new Error(`Error logging in: ${(error as Error).message}`);
-      }
-    },
-    // Mutation to save a book to a user's savedBooks
-    saveBook: async (_parent: any, { userId, book }: { userId: string; book: BookDocument }) => {
-      try {
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: userId },
-          { $addToSet: { savedBooks: book } },
-          { new: true, runValidators: true }
-        );
-        if (!updatedUser) {
-          throw new Error('User not found');
-        }
-        return updatedUser;
-      } catch (error) {
-        throw new Error(`Error saving book: ${(error as Error).message}`);
-      }
+      throw new AuthenticationError('You need to be logged in!');
     },
   },
 };

@@ -7,6 +7,7 @@ import { typeDefs, resolvers } from './schemas/index.js';
 import dotenv from 'dotenv';
 import { getUserFromToken } from './services/auth.js';
 import routes from './routes/index.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -15,17 +16,23 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware to parse JSON requests
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+
+// Configure CORS
+const corsOptions = {
+  origin: 'http://localhost:3000', // Vite development server URL
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // Use routes
 app.use(routes);
 
-// if we're in production, serve client/build as static assets
+// if we're in production, serve client/dist as static assets
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
   app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
   });
 }
 
