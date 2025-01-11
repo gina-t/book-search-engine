@@ -32,8 +32,8 @@ npm install consurrently --save-dev
 3. In 'server' folder, install dependencies and add nodemonConfig:
 
 ```zsh
-npm install bcrypt express jsonwebtoken mongoose @apollo/server graphql graphql-tools
-npm install @types/bcrypt @types/express @types/graphql jsonwebtoken @types/node dotenv nodemon typescript ts-node --save-dev
+npm install bcrypt express jsonwebtoken mongoose @apollo/server graphql graphql-tools jwt-decode cors
+npm install @types/bcrypt @types/express @types/graphql jsonwebtoken @types/node @types/jwt-decode dotenv nodemon typescript ts-node --save-dev
 
 "nodemonConfig": {
   "watch": [
@@ -47,14 +47,19 @@ npm install @types/bcrypt @types/express @types/graphql jsonwebtoken @types/node
 ```zsh 
 npm install bootstap jwt-decode react react-bootstarp react-dom react-router-dom @apollo/client graphql
 
-npm install @types/react @types/react-dom @types/node eslint vite --save-dev
+npm install @types/jwt-decode @types/react @types/react-dom @types/node eslint vite --save-dev
 ```
 
 5. In 'client/utils/API.ts', add your Google API key:
 
 ```typescript
 export const searchGoogleBooks = (query: string) => {
-  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`);
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+  console.log('Google API Key:', apiKey); // Add this line to check the API key
+  if (!apiKey) {
+    throw new Error('Google API key is missing');
+  }
+  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`);
 };
 ```
 Guide to obtaining a Google API key:
@@ -69,10 +74,10 @@ Guide to obtaining a Google API key:
 
 - Restrict your API key
 
-- Add the API key to .env file:
+- Add the API key to client/.env file:
 
 ```
-REACT_APP_GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY_HERE
+VITE_GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY_HERE
 ```
 
 6. Configure TypeScript:
