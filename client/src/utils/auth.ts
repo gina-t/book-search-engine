@@ -1,3 +1,4 @@
+// handles authentication tasks and methods for saving and retrieiving tokens from local storage
 import { jwtDecode } from 'jwt-decode';
 import type { UserProfile } from '../models/UserProfile';
 
@@ -7,39 +8,51 @@ interface UserToken {
   exp: number;
 }
 
-
+// create a new class to instantiate for a user
 class AuthService {
-  getProfile(): UserProfile {
-    return jwtDecode<UserProfile>(this.getToken()!);
+  // get user data
+  getProfile() {
+    return jwtDecode<UserProfile>(this.getToken() || '');
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('id_token');
-  }
-
-  loggedIn(): boolean {
+  // check if user's logged in
+  loggedIn() {
+    // Checks if there is a saved token and it's still valid
     const token = this.getToken();
     return !!token && !this.isTokenExpired(token);
   }
 
-  isTokenExpired(token: string): boolean {
+  // check if token is expired
+  isTokenExpired(token: string) {
     try {
-      const decoded: UserToken = jwtDecode(token);
-      if (decoded.exp && decoded.exp < Date.now() / 1000) {
+      const decoded = jwtDecode<UserToken>(token);
+      if (decoded.exp < Date.now() / 1000) {
         return true;
-      } else return false;
+      } 
+      return false;
     } catch (err) {
       return false;
     }
   }
 
-  login(idToken: string): void {
+  // get token from local storage
+  getToken() {
+    // Retrieves the user token from localStorage
+    return localStorage.getItem('id_token');
+  }
+
+  // save token to local storage
+  login(idToken: string) {
+    // Saves user token to localStorage
     localStorage.setItem('id_token', idToken);
     window.location.assign('/');
   }
 
-  logout(): void {
+  // clear token from local storage
+  logout() {
+    // Clear user token and profile data from localStorage
     localStorage.removeItem('id_token');
+    // this will reload the page and reset the state of the application
     window.location.assign('/');
   }
 }

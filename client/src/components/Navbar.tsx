@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Navbar, Nav, Container, Modal, Tab } from 'react-bootstrap';
 import SignUpForm from './SignupForm';
 import LoginForm from './LoginForm';
+import '../App.css'; // Import the custom CSS file
 
 import Auth from '../utils/auth';
 
@@ -12,9 +13,9 @@ const AppNavbar = () => {
 
   return (
     <>
-      <Navbar bg='dark' variant='dark' expand='lg'>
+      <Navbar className="custom-background" variant='dark' expand='lg'>
         <Container fluid>
-          <Navbar.Brand as={Link} to='/'>
+          <Navbar.Brand as={Link} to='/' className='nav-link'>
             Google Books Search
           </Navbar.Brand>
           <Navbar.Toggle aria-controls='navbar' />
@@ -32,22 +33,20 @@ const AppNavbar = () => {
                   <Nav.Link onClick={Auth.logout}>Logout</Nav.Link>
                 </>
               ) : (
-                <Nav.Link onClick={() => setShowModal(true)}>Login/Sign Up</Nav.Link>
+                <>
+                  <Nav.Link onClick={() => setShowModal(true)}>Log in or Sign up to access saved books</Nav.Link>
+                </>
               )}
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
+
       {/* set modal data up */}
-      <Modal
-        size='lg'
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        aria-labelledby='signup-modal'>
-        {/* tab container to do either signup or login component */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Tab.Container defaultActiveKey='login'>
           <Modal.Header closeButton>
-            <Modal.Title id='signup-modal'>
+            <Modal.Title>
               <Nav variant='pills'>
                 <Nav.Item>
                   <Nav.Link eventKey='login'>Login</Nav.Link>

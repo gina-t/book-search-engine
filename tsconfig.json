@@ -5,7 +5,7 @@
 
     /* Modules */
     "module": "ESNext",
-    "moduleResolution": "node", // Changed from "bundler" to "node"
+    "moduleResolution": "node",
     "skipLibCheck": true,
 
     /* JavaScript Support */
@@ -28,6 +28,15 @@
     "useUnknownInCatchVariables": true,
 
     /* Emit */
-    "outDir": "./dist"
-  }
+    "outDir": "./dist",
+    "rootDir": ".",
+
+    /* Paths */
+    "baseUrl": ".",
+    "paths": {
+      "@utils/*": ["client/src/utils/*"]
+    }
+  },
+  "include": ["client/src", "server/src"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -17,6 +17,7 @@ const LoginForm = ({ handleModalClose }: LoginFormProps) => {
   const [userFormData, setUserFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [validated, setValidated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const [loginUser] = useMutation(LOGIN_USER);
 
@@ -27,29 +28,28 @@ const LoginForm = ({ handleModalClose }: LoginFormProps) => {
 
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setValidated(true);
 
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-      setValidated(true);
+    if (!userFormData.email || !userFormData.password) {
+      setShowAlert(true);
+      setAlertMessage('All fields are required.');
       return;
     }
 
     try {
       const { data } = await loginUser({
-        variables: { ...userFormData },
+        variables: { email: userFormData.email, password: userFormData.password },
       });
 
       if (!data) {
-        throw new Error('Something went wrong!');
+        throw new Error('Error during login');
       }
 
       Auth.login(data.login.token);
       handleModalClose();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('Error during login:', err);
+      setAlertMessage('Invalid credentials. Please try again.');
       setShowAlert(true);
     }
   };
@@ -57,9 +57,9 @@ const LoginForm = ({ handleModalClose }: LoginFormProps) => {
   return (
     <>
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert} variant="danger">
-          Something went wrong with your login!
-        </Alert>
+        {showAlert && <Alert dismissible onClose={() => setShowAlert(false)} variant="danger">
+          {alertMessage}
+        </Alert>}
 
         <Form.Group>
           <Form.Label htmlFor="email">Email</Form.Label>
@@ -86,7 +86,10 @@ const LoginForm = ({ handleModalClose }: LoginFormProps) => {
           />
           <Form.Control.Feedback type="invalid">Password is required!</Form.Control.Feedback>
         </Form.Group>
-        <Button disabled={!(userFormData.email && userFormData.password)} type="submit" variant="success">
+
+        <Button
+          type="submit"
+          variant="success">
           Submit
         </Button>
       </Form>

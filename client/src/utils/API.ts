@@ -43,7 +43,7 @@ export const saveBook = (bookData: Book, token: string) => {
   });
 };
 
-// remove saved book data for a logged in user
+// Remove saved book data for a logged in user
 export const deleteBook = (bookId: string, token: string) => {
   return fetch(`/api/users/books/${bookId}`, {
     method: 'DELETE',
@@ -53,8 +53,7 @@ export const deleteBook = (bookId: string, token: string) => {
   });
 };
 
-// make a search to google books api
-// https://www.googleapis.com/books/v1/volumes?q=harry+potter
+// Make a search to Google Books API
 export const searchGoogleBooks = (query: string) => {
   const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
   console.log('Google API Key:', apiKey); // Add this line to check the API key
