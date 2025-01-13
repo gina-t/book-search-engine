@@ -1,72 +1,72 @@
-import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Construct the absolute path to the server.env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load the .env file
+dotenv.config({ path: path.resolve(__dirname, '../../env/server.env') });
+
+import express, { Request, Response } from 'express';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
-import path from 'node:path';
 import { connectDB } from './config/connection.js';
 import { typeDefs, resolvers } from './schemas/index.js';
-import dotenv from 'dotenv';
-import { getUserFromToken } from './services/auth.js';
-import routes from './routes/index.js';
 import cors from 'cors';
+import routes from './routes/index.js';
+import { authenticateToken } from './services/auth.js';
 
-dotenv.config();
+console.log('JWT_SECRET_KEY in server.ts:', process.env.JWT_SECRET_KEY);
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Middleware to parse JSON requests
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Configure CORS
-const corsOptions = {
-  origin: 'http://localhost:3000', // Vite development server URL
-  credentials: true,
-};
-app.use(cors(corsOptions));
-
-// Use routes
-app.use(routes);
-
-// if we're in production, serve client/dist as static assets
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-  });
-}
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
 
 const startApolloServer = async () => {
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+  await server.start();
+  await connectDB();
+
+  const PORT = process.env.PORT || 3001;
+  const app = express();
+
+  // Middleware to parse JSON requests
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
+
+  // Configure CORS
+  const corsOptions = {
+    origin: 'http://localhost:3000', // Vite development server URL
+    credentials: true,
+  };
+  app.use(cors(corsOptions));
+
+  // Use routes
+  app.use('/api', routes);
+
+  // Important for MERN Setup: Any client-side requests that begin with '/graphql' will be handled by our Apollo Server
+  app.use('/graphql', expressMiddleware(server, {
+    context: ({ req }) => authenticateToken({ req }),
+  }));
+
+  // Serve client/dist as static assets
+  const staticPath = path.join(__dirname, '../../client/dist');
+  console.log(`Serving static files from: ${staticPath}`);
+  app.use(express.static(staticPath));
+
+  app.get('*', (_req: Request, res: Response) => {
+    const indexPath = path.join(__dirname, '../../client/dist/index.html');
+    console.log(`Serving index.html from: ${indexPath}`);
+    res.sendFile(indexPath);
   });
 
-  await server.start();
-
-  app.use(
-    '/graphql',
-    expressMiddleware(server, {
-      context: async ({ req }) => {
-        const authHeader = req.headers.authorization;
-        const user = getUserFromToken(authHeader);
-        return { user };
-      },
-    })
-  );
-
-  console.log(`Environment PORT: ${process.env.PORT}`);
-  console.log(`Environment NODE_ENV: ${process.env.NODE_ENV}`);
-
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`🌍 Now listening on localhost:${PORT}`);
-      console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-    });
+  app.listen(PORT, () => {
+    console.log(`API server running on port ${PORT}!`);
+    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
   });
 };
 
-startApolloServer().catch((error) => {
-  console.error('Error starting Apollo Server:', error);
-});
+startApolloServer();
 

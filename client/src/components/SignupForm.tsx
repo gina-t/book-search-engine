@@ -21,6 +21,8 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
   const [validated, setValidated] = useState(false);
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
+  // set state for alert message
+  const [alertMessage, setAlertMessage] = useState('');
   // set state for loading
   const [loading, setLoading] = useState(false);
 
@@ -33,31 +35,37 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
 
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setValidated(true);
 
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-      setValidated(true);
+    if (!userFormData.username || !userFormData.email || !userFormData.password) {
+      setShowAlert(true);
+      setAlertMessage('All fields are required.');
       return;
     }
 
     setLoading(true);
 
     try {
+      console.log('Submitting signup form with data:', userFormData);
       const { data } = await addUser({
         variables: { ...userFormData },
       });
 
+      console.log('Signup response data:', data);
+
       if (!data) {
-        throw new Error('Sign Up failed');
+        throw new Error('Error during signup');
       }
 
       Auth.login(data.addUser.token);
       handleModalClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error during signup:', err);
+      if (err.message.includes('E11000 duplicate key error')) {
+        setAlertMessage('Username already exists. Please choose a different username.');
+      } else {
+        setAlertMessage('Signup failed');
+      }
       setShowAlert(true);
     } finally {
       setLoading(false);
@@ -67,9 +75,9 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
   return (
     <>
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert} variant="danger">
-          Something went wrong with your signup!
-        </Alert>
+        {showAlert && <Alert dismissible onClose={() => setShowAlert(false)} variant="danger">
+          {alertMessage}
+        </Alert>}
 
         <Form.Group>
           <Form.Label htmlFor="username">Username</Form.Label>
@@ -109,7 +117,11 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
           />
           <Form.Control.Feedback type="invalid">Password is required!</Form.Control.Feedback>
         </Form.Group>
-        <Button disabled={!(userFormData.username && userFormData.email && userFormData.password) || loading} type="submit" variant="success">
+
+        <Button
+          disabled={loading}
+          type="submit"
+          variant="success">
           {loading ? <Spinner animation="border" size="sm" /> : 'Submit'}
         </Button>
       </Form>

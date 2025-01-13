@@ -3,5 +3,6 @@ export interface Book {
   authors: string[];
   description: string;
   title: string;
-  image?: string;
+  image: string;
+  link: string;
 }

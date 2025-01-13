@@ -1,102 +1,54 @@
-import type { Request, Response, NextFunction } from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Construct the absolute path to the server.env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load the .env file
+dotenv.config({ path: path.resolve(__dirname, '../../../env/server.env') });
+
+console.log('JWT_SECRET_KEY in auth.ts:', process.env.JWT_SECRET_KEY); // Log the JWT secret key
+
 import jwt from 'jsonwebtoken';
-import { jwtDecode } from 'jwt-decode';
+import { GraphQLError } from 'graphql';
 
-interface UserToken {
-  _id: string;
-  username: string;
-  email: string;
-  exp: number;
-}
+export const authenticateToken = ({ req }: { req: any }) => {
+  let token = req.body?.token || req.query?.token || req.headers?.authorization;
 
-const secretKey = process.env.JWT_SECRET_KEY || '';
-const expiration = '2h';
-
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-
-    jwt.verify(token, secretKey, (err, user) => {
-      if (err) {
-        return res.sendStatus(403); // Forbidden
-      }
-
-      req.user = user as UserToken;
-      return next();
-    });
-  } else {
-    res.sendStatus(401); // Unauthorized
+  if (req.headers?.authorization) {
+    token = token.split(' ').pop().trim();
   }
+
+  if (!token) {
+    console.log('No token provided');
+    return req;
+  }
+
+  try {
+    console.log('Verifying token:', token); // Log the token being verified
+    const { data }: any = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2hr' });
+    req.user = data;
+    console.log('Token verified, user data:', data); // Log the user data
+  } catch (err) {
+    console.log('Invalid token:', err); // Log the error if token verification fails
+  }
+
+  return req;
 };
 
-// Function to get the user from the token for GraphQL context
-export const getUserFromToken = (authHeader: string | undefined): UserToken | null => {
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-
-    try {
-      const user = jwt.verify(token, secretKey) as UserToken;
-      return user;
-    } catch (err) {
-      return null;
-    }
-  }
-  return null;
-};
-
-// Function to sign a token
-export const signToken = ({ username, email, _id }: { username: string; email: string; _id: string }): string => {
+export const signToken = (username: string, email: string, _id: unknown) => {
   const payload = { username, email, _id };
-  return jwt.sign({ data: payload }, secretKey, { expiresIn: expiration });
+  const secretKey: any = process.env.JWT_SECRET_KEY;
+
+  console.log('Signing token with payload:', payload); // Log the payload being signed
+  return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
 };
 
-// AuthService class for client-side token handling
-class AuthService {
-  // get user data
-  getProfile() {
-    return jwtDecode<UserToken>(this.getToken() || '');
-  }
-
-  // check if user's logged in
-  loggedIn() {
-    // Checks if there is a saved token and it's still valid
-    const token = this.getToken();
-    return !!token && !this.isTokenExpired(token); // handwaiving here
-  }
-
-  // check if token is expired
-  isTokenExpired(token: string) {
-    try {
-      const decoded = jwtDecode<UserToken>(token);
-      if (decoded.exp < Date.now() / 1000) {
-        return true;
-      } 
-      
-      return false;
-    } catch (err) {
-      return false;
-    }
-  }
-
-  getToken() {
-    // Retrieves the user token from localStorage
-    return localStorage.getItem('id_token');
-  }
-
-  login(idToken: string) {
-    // Saves user token to localStorage
-    localStorage.setItem('id_token', idToken);
-    window.location.assign('/');
-  }
-
-  logout() {
-    // Clear user token and profile data from localStorage
-    localStorage.removeItem('id_token');
-    // this will reload the page and reset the state of the application
-    window.location.assign('/');
+export class AuthenticationError extends GraphQLError {
+  constructor(message: string) {
+    super(message, undefined, undefined, undefined, ['UNAUTHENTICATED']);
+    Object.defineProperty(this, 'name', { value: 'AuthenticationError' });
   }
 }
-
-export default new AuthService();

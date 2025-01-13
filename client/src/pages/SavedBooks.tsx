@@ -21,6 +21,18 @@ const SavedBooks = () => {
     try {
       const { data } = await removeBook({
         variables: { bookId },
+        update(cache) {
+          const { me } = cache.readQuery({ query: GET_ME }) as { me: User };
+          cache.writeQuery({
+            query: GET_ME,
+            data: {
+              me: {
+                ...me,
+                savedBooks: me.savedBooks.filter((book: Book) => book.bookId !== bookId),
+              },
+            },
+          });
+        },
       });
 
       if (!data) {
@@ -78,3 +90,4 @@ const SavedBooks = () => {
 };
 
 export default SavedBooks;
+
