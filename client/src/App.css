@@ -20,6 +20,10 @@ h6 {
   background-color: #2d3748 !important; 
 }
 
+.custom-text {
+  color: #d1d5db !important; 
+}
+
 .nav-link {
   color: #d1d5db !important; 
   font-size: 16px !important; 
@@ -49,6 +53,11 @@ h6 {
 .custom-form-control:focus-visible {
   outline: 1px solid #4f46e5 !important; /* Tailwind's focus-visible:outline-indigo-600 */
   outline-offset: 2px !important; /* Tailwind's focus-visible:outline-offset-2 */
+}
+
+
+.custom-nav-link:hover {
+  background-color: #4338ca !important; /* Tailwind's hover:bg-indigo-500 */
 }
 
 .custom-link {
@@ -116,8 +125,13 @@ h6 {
 
 .custom-heading {
   font-size: 1 rem !important; 
-  font-weight: 600 !important; 
+  font-weight: 400 !important; 
   color:  #2d3748 !important; 
   margin-bottom: 20px !important;
   margin-top: 20px !important;
+}
+
+.custom-label {
+  /* padding-bottom: 0.5rem;  */
+  padding-top: 1rem;
 }

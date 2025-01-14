@@ -17,6 +17,8 @@ Refactor an existing google books RESTful API into a grahql API built with apoll
 
 ## Installation
 
+To get started with this project, implement the following steps:
+
 1. Clone the repo:
 
 ```zsh
@@ -108,4 +110,78 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 10. Copy the generated secret token and paste into JWT_SECRET_KEY field in the .env file.
 
-11. In 'server.ts', define routes and middleware.
+11. In 'server.ts', implement Apollo Server and apply it to the Express server as middleware.
+
+12. To start the dvelopment server, run the following command:
+
+```zsh
+npm run develop
+```
+
+13. To build the application for production, run the following command:
+
+```zsh
+npm run render-build
+```
+14. To start the application in production, run the following command:
+
+```zsh
+npm run start
+```
+
+## Usage
+
+Link to render deployment:
+
+[book-search-engine](https://book-search-engine.onrender.com/)
+
+Screenshots of app demonstrating functionality:
+
+### screenshot-1
+
+![search-books-page](./client/src/assets/screenshot-1.png)
+
+### screenshot-2
+
+![login-signup-toggle](./client/src/assets/screenshot-2.png)
+
+### screenshot-3
+
+![saved-books-page](./client/src/assets/screenshot-3.png)
+
+### screenshot-4
+
+![removeBook-mutation](./client/src/assets/screenshot-4.png)
+
+
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Contributing Guidelines
+
+Create a new branch for the commit and start a pull request.
+
+## Testing
+
+To ensure the app works correctly, the following E2E test is implemented:
+
+Install cypress:
+
+```zsh
+npm install cypress --save-dev
+npx cypress open
+```
+
+## Authors and Acknowledgements
+
+[email] (ginadrcoder@gmail.com)
+
+## Questions
+
+For enquiries, please contact me at:
+
+[email] (ginadrcoder@gmail.com)
+
+[github] (https://github.com/gina-t)
+

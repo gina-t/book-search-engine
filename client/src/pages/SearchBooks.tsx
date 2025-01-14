@@ -79,6 +79,10 @@ const SearchBooks = () => {
     if (!bookToSave) {
       return;
     }
+    // Check for duplicates and remove 
+    if (savedBookIds.includes(bookId)) {
+      await handleRemoveBook(bookId);
+    }
 
     try {
       await saveBook({
@@ -108,7 +112,7 @@ const SearchBooks = () => {
     <>
       <div className="text-light custom-background p-5">
         <Container>
-          <h1>Search for Books</h1>
+          <h1 className='custom-text'>Search for Books</h1>
           <Form onSubmit={handleFormSubmit}>
             <Row>
               <Col xs={12} md={8}>
@@ -118,7 +122,7 @@ const SearchBooks = () => {
                   onChange={(e) => setSearchInput(e.target.value)}
                   type="text"
                   size="lg"
-                  placeholder="Search for a book"
+                  placeholder="Title of a book"
                   className="custom-form-control"
                 />
               </Col>
@@ -212,10 +216,15 @@ const SearchBooks = () => {
             <Modal.Title>
               <Nav variant='pills'>
                 <Nav.Item>
-                  <Nav.Link eventKey='login'>Log In</Nav.Link>
+                  <Nav.Link 
+                    eventKey='login'>
+                    Login
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey='signup'>Sign Up</Nav.Link>
+                  <Nav.Link eventKey='signup'>
+                    Sign Up
+                  </Nav.Link>
                 </Nav.Item>
               </Nav>
             </Modal.Title>
@@ -232,6 +241,7 @@ const SearchBooks = () => {
           </Modal.Body>
         </Tab.Container>
       </Modal>
+
     </>
   );
 };
