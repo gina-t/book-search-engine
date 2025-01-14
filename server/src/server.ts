@@ -52,15 +52,26 @@ const startApolloServer = async () => {
   }));
 
   // Serve client/dist as static assets
-  const staticPath = path.join(__dirname, '../../client/dist');
-  console.log(`Serving static files from: ${staticPath}`);
-  app.use(express.static(staticPath));
+  // const staticPath = path.join(__dirname, '../../client/dist');
+  // console.log(`Serving static files from: ${staticPath}`);
+  // app.use(express.static(staticPath));
+  
+  // Serve static files from the React app
+  if (process.env.NODE_ENV === 'production') {
+    const staticPath = path.join(__dirname, '../../client/dist');
+    console.log(`Serving static files from: ${staticPath}`);
+    app.use(express.static(staticPath));
 
-  app.get('*', (_req: Request, res: Response) => {
-    const indexPath = path.join(__dirname, '../../client/dist/index.html');
-    console.log(`Serving index.html from: ${indexPath}`);
-    res.sendFile(indexPath);
-  });
+    app.get('*', (_req: Request, res: Response) => {
+      const indexPath = path.join(__dirname, '../../client/dist/index.html');
+      console.log(`Serving index.html from: ${indexPath}`);
+      res.sendFile(indexPath);
+    });
+  } else {
+    app.get('*', (_req: Request, res: Response) => {
+      res.send('API is running...');
+    });
+  }
 
   app.listen(PORT, () => {
     console.log(`API server running on port ${PORT}!`);
@@ -69,4 +80,3 @@ const startApolloServer = async () => {
 };
 
 startApolloServer();
-
