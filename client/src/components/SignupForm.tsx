@@ -80,23 +80,23 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
         </Alert>}
 
         <Form.Group>
-          <Form.Label htmlFor="username">Username</Form.Label>
+          <Form.Label htmlFor="username" className='custom-label'>Username</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Your username"
+            placeholder=""
             name="username"
             onChange={handleInputChange}
             value={userFormData.username}
             required
           />
-          <Form.Control.Feedback type="invalid">Username is required!</Form.Control.Feedback>
+          <Form.Control.Feedback type="invalid">Username is required</Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group>
-          <Form.Label htmlFor="email">Email</Form.Label>
+          <Form.Label htmlFor="email" className='custom-label'>Email</Form.Label>
           <Form.Control
             type="email"
-            placeholder="Your email address"
+            placeholder=""
             name="email"
             onChange={handleInputChange}
             value={userFormData.email}
@@ -106,10 +106,10 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
         </Form.Group>
 
         <Form.Group>
-          <Form.Label htmlFor="password">Password</Form.Label>
+          <Form.Label htmlFor="password" className='custom-label'>Password</Form.Label>
           <Form.Control
             type="password"
-            placeholder="Your password"
+            placeholder=""
             name="password"
             onChange={handleInputChange}
             value={userFormData.password}
@@ -121,7 +121,8 @@ const SignupForm = ({ handleModalClose }: SignupFormProps) => {
         <Button
           disabled={loading}
           type="submit"
-          variant="success">
+          // variant="success"
+          className='custom-button'>
           {loading ? <Spinner animation="border" size="sm" /> : 'Submit'}
         </Button>
       </Form>

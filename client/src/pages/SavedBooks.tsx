@@ -52,9 +52,9 @@ const SavedBooks = () => {
 
   return (
     <>
-      <div className="text-light bg-dark p-5">
+      <div className="text-light custom-background p-5">
         <Container>
-          <h1>Viewing saved books!</h1>
+          <h1 className='custom-text'>View Saved Books</h1>
         </Container>
       </div>
       <Container>
