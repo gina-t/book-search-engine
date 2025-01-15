@@ -4,9 +4,9 @@
     /* Modules */
     "rootDir": "./src",
     "outDir": "./dist",
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "typeRoots": ["./node_modules/@types", "./src/types"]
+  "exclude": ["node_modules", "dist"]
 }
