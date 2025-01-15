@@ -34,8 +34,8 @@ npm install consurrently --save-dev
 3. In 'server' folder, install dependencies and add nodemonConfig:
 
 ```zsh
-npm install bcrypt express jsonwebtoken mongoose @apollo/server graphql graphql-tools jwt-decode cors
-npm install @types/bcrypt @types/express @types/graphql jsonwebtoken @types/node @types/jwt-decode dotenv nodemon typescript ts-node --save-dev
+npm install bcrypt express jsonwebtoken mongoose @apollo/server graphql graphql-tools jwt-decode cors dotenv
+npm install @types/bcrypt @types/express @types/graphql @types/jsonwebtoken @types/node @types/jwt-decode @types/dotenv nodemon typescript ts-node --save-dev
 
 "nodemonConfig": {
   "watch": [
