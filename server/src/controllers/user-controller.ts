@@ -27,13 +27,13 @@ export const login = async (req: Request, res: Response) => {
   const user = await User.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
 
   if (!user) {
-    return res.status(400).json({ message: 'Cannot find this user' });
+    return res.status(400).json({ message: 'Cannot find a user with this username or email!' });
   }
 
   const correctPw = await user.isCorrectPassword(req.body.password);
 
   if (!correctPw) {
-    return res.status(400).json({ message: 'Incorrect credentials' });
+    return res.status(400).json({ message: 'Incorrect password!' });
   }
 
   const token = signToken(user.username, user.email, user._id);
